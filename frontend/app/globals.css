@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --background: #0a0b14;
+  --surface: #111220;
+  --surface-raised: #181929;
+  --border: #1e2035;
+  --text-primary: #f0f1ff;
+  --text-secondary: #8b8fb5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass {
+  background: rgba(17, 18, 32, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-glow {
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(99, 102, 241, 0.3); }
+  50% { border-color: rgba(99, 102, 241, 0.7); }
+}
+
+.pulse-border {
+  animation: pulse-border 3s ease-in-out infinite;
+}
