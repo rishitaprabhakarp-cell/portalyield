@@ -7,6 +7,7 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "interact:local": "hardhat run scripts/interact.js --network localhost",
     "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot_testnet",
     "node": "hardhat node"
   },
