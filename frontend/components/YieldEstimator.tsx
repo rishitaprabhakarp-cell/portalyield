@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Guilloche from "@/components/Guilloche";
 
 const ASSETS = [
   { id: 1, label: "US Treasury bill", apy: 5.2 },
@@ -21,9 +22,13 @@ export default function YieldEstimator() {
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-mint-100 px-6 py-12 sm:px-14 sm:py-16">
-      <div
-        aria-hidden
-        className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-lilac-300/70"
+      <Guilloche
+        size={420}
+        lobes={14}
+        strands={7}
+        stroke="#5b45a8"
+        strokeWidth={0.5}
+        className="pointer-events-none absolute -left-40 -top-40 h-[420px] w-[420px] opacity-25"
       />
       <div className="relative">
         <h2 className="text-center text-5xl font-semibold leading-[0.95] tracking-display sm:text-7xl">

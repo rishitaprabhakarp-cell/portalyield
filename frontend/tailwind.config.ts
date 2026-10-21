@@ -24,9 +24,15 @@ const config: Config = {
         },
         aqua: "#79e0cc",
         gain: "#1f9d6f",
+        bond: {
+          DEFAULT: "#0d3b33",
+          700: "#14504a",
+          300: "#8fc4b6",
+        },
       },
       fontFamily: {
         sans: ["'Instrument Sans'", "Arial", "sans-serif"],
+        serif: ["'Instrument Serif'", "Georgia", "serif"],
       },
       letterSpacing: {
         display: "-0.04em",
