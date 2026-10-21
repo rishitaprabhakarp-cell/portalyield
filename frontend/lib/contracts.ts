@@ -1,138 +1,73 @@
-// Contract ABIs and addresses for PortalYield on Portaldot Network V3.0
+import type { Abi, Address } from "viem";
+import { defineChain } from "viem";
+import deployments from "./deployments.json";
+import RWAAssetAbi from "./abi/RWAAsset.json";
+import YieldTokenAbi from "./abi/YieldToken.json";
+import VaultAbi from "./abi/PortalYieldVault.json";
+import BridgeAbi from "./abi/CrossChainBridge.json";
 
-export const PORTALDOT_TESTNET = {
-  id: 9999,
-  name: "Portaldot Testnet",
-  network: "portaldot-testnet",
-  nativeCurrency: { name: "POT", symbol: "POT", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://rpc-testnet.portaldot.io"] },
-    public: { http: ["https://rpc-testnet.portaldot.io"] },
-  },
-  blockExplorers: {
-    default: { name: "Portaldot Explorer", url: "https://explorer-testnet.portaldot.io" },
-  },
-} as const;
-
-// Update after deployment
-export const CONTRACT_ADDRESSES = {
-  RWAAsset: process.env.NEXT_PUBLIC_RWA_ASSET_ADDRESS || "0x0000000000000000000000000000000000000000",
-  YieldToken: process.env.NEXT_PUBLIC_YIELD_TOKEN_ADDRESS || "0x0000000000000000000000000000000000000000",
-  PortalYieldVault: process.env.NEXT_PUBLIC_VAULT_ADDRESS || "0x0000000000000000000000000000000000000000",
-  CrossChainBridge: process.env.NEXT_PUBLIC_BRIDGE_ADDRESS || "0x0000000000000000000000000000000000000000",
-} as const;
-
-export const RWA_ASSET_ABI = [
-  {
-    "inputs": [{"name": "to", "type": "address"}, {"name": "uri", "type": "string"}, {"name": "assetType", "type": "uint8"}, {"name": "issuer", "type": "string"}, {"name": "faceValue", "type": "uint256"}, {"name": "maturityDate", "type": "uint256"}, {"name": "annualYieldBPS", "type": "uint256"}],
-    "name": "mintAsset",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "tokenId", "type": "uint256"}],
-    "name": "getAssetData",
-    "outputs": [{"name": "", "type": "tuple", "components": [{"name": "assetType", "type": "uint8"}, {"name": "issuer", "type": "string"}, {"name": "faceValue", "type": "uint256"}, {"name": "maturityDate", "type": "uint256"}, {"name": "annualYieldBPS", "type": "uint256"}, {"name": "isActive", "type": "bool"}, {"name": "mintedAt", "type": "uint256"}, {"name": "originalOwner", "type": "address"}]}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "tokenId", "type": "uint256"}],
-    "name": "accruedYield",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "owner", "type": "address"}],
-    "name": "balanceOf",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "to", "type": "address"}, {"name": "tokenId", "type": "uint256"}],
-    "name": "approve",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-] as const;
-
-export const YIELD_TOKEN_ABI = [
-  {
-    "inputs": [{"name": "account", "type": "address"}],
-    "name": "balanceOf",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-] as const;
-
-export const VAULT_ABI = [
-  {
-    "inputs": [{"name": "tokenId", "type": "uint256"}],
-    "name": "stake",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "tokenId", "type": "uint256"}],
-    "name": "unstake",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "tokenId", "type": "uint256"}],
-    "name": "claimYield",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "tokenId", "type": "uint256"}],
-    "name": "pendingYield",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"name": "staker", "type": "address"}],
-    "name": "getStakerTokens",
-    "outputs": [{"name": "", "type": "uint256[]"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getVaultStats",
-    "outputs": [{"name": "totalStaked", "type": "uint256"}, {"name": "totalPYT", "type": "uint256"}, {"name": "totalYield", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-] as const;
-
-export const ASSET_TYPE_LABELS: Record<number, string> = {
-  0: "T-Bill",
-  1: "Corporate Bond",
-  2: "Real Estate",
-  3: "Commodity",
-  4: "Equity",
+export const abis = {
+  rwa: RWAAssetAbi as Abi,
+  pyt: YieldTokenAbi as Abi,
+  vault: VaultAbi as Abi,
+  bridge: BridgeAbi as Abi,
 };
+
+const LOCAL_RPC = "http://127.0.0.1:8545";
+const REMOTE_LOCAL_RPC = "http://127.0.0.1:8546";
+
+export const portaldotLocal = defineChain({
+  id: 31337,
+  name: "Portaldot (local)",
+  nativeCurrency: { name: "POT", symbol: "POT", decimals: 18 },
+  rpcUrls: { default: { http: [LOCAL_RPC] } },
+});
+
+export const ethereumLocal = defineChain({
+  id: 31338,
+  name: "Ethereum (local)",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: [REMOTE_LOCAL_RPC] } },
+});
+
+export const portaldotTestnet = defineChain({
+  id: Number(process.env.NEXT_PUBLIC_PORTALDOT_CHAIN_ID || 9999),
+  name: "Portaldot testnet",
+  nativeCurrency: { name: "POT", symbol: "POT", decimals: 18 },
+  rpcUrls: { default: { http: [process.env.NEXT_PUBLIC_PORTALDOT_RPC_URL || "https://rpc-testnet.portaldot.io"] } },
+  blockExplorers: process.env.NEXT_PUBLIC_PORTALDOT_EXPLORER_URL
+    ? { default: { name: "Portaldot explorer", url: process.env.NEXT_PUBLIC_PORTALDOT_EXPLORER_URL } }
+    : undefined,
+});
+
+export const HOME_CHAIN_ID = Number(process.env.NEXT_PUBLIC_HOME_CHAIN_ID || portaldotLocal.id);
+export const REMOTE_CHAIN_ID = Number(process.env.NEXT_PUBLIC_REMOTE_CHAIN_ID || ethereumLocal.id);
+export const IS_LOCAL = HOME_CHAIN_ID === portaldotLocal.id;
+
+export const chains = IS_LOCAL ? ([portaldotLocal, ethereumLocal] as const) : ([portaldotTestnet, ethereumLocal] as const);
+export const homeChain = chains[0];
+export const remoteChain = chains.find((c) => c.id === REMOTE_CHAIN_ID) ?? chains[1];
+
+type Deployment = { role: string; contracts: Record<string, Address> };
+const byChain = deployments as Record<string, Deployment>;
+
+export function contractsOn(chainId: number) {
+  return byChain[String(chainId)]?.contracts;
+}
+
+export const home = contractsOn(HOME_CHAIN_ID);
+export const remote = contractsOn(REMOTE_CHAIN_ID);
+
+export function explorerTx(chainId: number, hash: string) {
+  const chain = chains.find((c) => c.id === chainId);
+  const base = chain?.blockExplorers?.default.url;
+  return base ? `${base}/tx/${hash}` : undefined;
+}
+
+export const ASSET_TYPES = ["Treasury bill", "Corporate bond", "Real estate", "Commodity", "Equity"];
+
+export const DEMO_ASSETS = [
+  { kind: 0, label: "US Treasury bill", issuer: "US Treasury", face: 1000, apy: 5.2, term: "1 year" },
+  { kind: 1, label: "Apple corporate bond", issuer: "Apple Inc.", face: 5000, apy: 7.5, term: "2 years" },
+  { kind: 2, label: "Manhattan REIT", issuer: "Manhattan REIT", face: 10000, apy: 8.0, term: "2 years" },
+];

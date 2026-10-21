@@ -6,10 +6,12 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "node": "hardhat node --port 8545",
+    "node:remote": "HARDHAT_CHAIN_ID=31338 hardhat node --port 8546",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost && hardhat run scripts/deploy-remote.js --network remote_local",
+    "relayer": "node scripts/relayer.js",
     "interact:local": "hardhat run scripts/interact.js --network localhost",
-    "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot_testnet",
-    "node": "hardhat node"
+    "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot_testnet"
   },
   "keywords": [],
   "author": "",

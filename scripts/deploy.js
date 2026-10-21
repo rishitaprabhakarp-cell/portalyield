@@ -1,102 +1,54 @@
+// Deploys the full protocol to the home chain (Portaldot, or the local stand-in).
 const hre = require("hardhat");
-const { writeFileSync, mkdirSync } = require("fs");
+const { saveDeployment } = require("./lib/exportFrontend");
 
-async function main() {
-  const [deployer] = await hre.ethers.getSigners();
-  console.log("\n🚀 PortalYield Deployment on Portaldot Network V3.0");
-  console.log("=".repeat(60));
-  console.log("Deployer address:", deployer.address);
-  console.log(
-    "Deployer balance:",
-    hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address)),
-    "POT"
-  );
-  console.log("Network:", hre.network.name);
-  console.log("=".repeat(60));
+const REMOTE_CHAIN_ID = parseInt(process.env.REMOTE_CHAIN_ID || "31338");
 
-  console.log("\n[1/4] Deploying RWAAsset (ERC-721)...");
-  const RWAAsset = await hre.ethers.getContractFactory("RWAAsset");
-  const rwaAsset = await RWAAsset.deploy();
-  await rwaAsset.waitForDeployment();
-  const rwaAddress = await rwaAsset.getAddress();
-  console.log("✅ RWAAsset deployed:", rwaAddress);
-
-  console.log("\n[2/4] Deploying YieldToken (ERC-20 PYT)...");
-  const YieldToken = await hre.ethers.getContractFactory("YieldToken");
-  const yieldToken = await YieldToken.deploy();
-  await yieldToken.waitForDeployment();
-  const pytAddress = await yieldToken.getAddress();
-  console.log("✅ YieldToken (PYT) deployed:", pytAddress);
-
-  console.log("\n[3/4] Deploying PortalYieldVault...");
-  const Vault = await hre.ethers.getContractFactory("PortalYieldVault");
-  const vault = await Vault.deploy(rwaAddress, pytAddress);
-  await vault.waitForDeployment();
-  const vaultAddress = await vault.getAddress();
-  console.log("✅ PortalYieldVault deployed:", vaultAddress);
-
-  console.log("\n[4/4] Deploying CrossChainBridge...");
-  const Bridge = await hre.ethers.getContractFactory("CrossChainBridge");
-  const bridge = await Bridge.deploy(pytAddress);
-  await bridge.waitForDeployment();
-  const bridgeAddress = await bridge.getAddress();
-  console.log("✅ CrossChainBridge deployed:", bridgeAddress);
-
-  console.log("\n[Config] Authorizing Vault as PYT minter...");
-  const tx1 = await yieldToken.setVault(vaultAddress);
-  await tx1.wait();
-  console.log("✅ Vault authorized as PYT minter");
-
-  console.log("\n[Demo] Minting sample RWA assets...");
-  const oneYearFromNow = Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
-  const twoYearsFromNow = Math.floor(Date.now() / 1000) + 2 * 365 * 24 * 60 * 60;
-
-  await (await rwaAsset.mintAsset(deployer.address, "ipfs://QmPortalYieldTBill001", 0, "US Treasury", 100000, oneYearFromNow, 520)).wait();
-  console.log("✅ Minted T-Bill NFT (tokenId: 1) — $1,000 @ 5.20% APY");
-
-  await (await rwaAsset.mintAsset(deployer.address, "ipfs://QmPortalYieldBond001", 1, "Apple Inc.", 500000, twoYearsFromNow, 750)).wait();
-  console.log("✅ Minted Corporate Bond NFT (tokenId: 2) — $5,000 @ 7.50% APY");
-
-  await (await rwaAsset.mintAsset(deployer.address, "ipfs://QmPortalYieldRE001", 2, "Manhattan REIT", 1000000, twoYearsFromNow, 800)).wait();
-  console.log("✅ Minted Real Estate NFT (tokenId: 3) — $10,000 @ 8.00% APY");
-
-  console.log("\n" + "=".repeat(60));
-  console.log("🎉 PORTALDOT DEPLOYMENT COMPLETE");
-  console.log("=".repeat(60));
-  console.log("\n📄 Contract Addresses:");
-  console.log(`   RWAAsset (ERC-721):    ${rwaAddress}`);
-  console.log(`   YieldToken (ERC-20):   ${pytAddress}`);
-  console.log(`   PortalYieldVault:      ${vaultAddress}`);
-  console.log(`   CrossChainBridge:      ${bridgeAddress}`);
-  console.log("\n🌐 Network:", hre.network.name);
-  console.log("👤 Deployer:", deployer.address);
-
-  const deploymentInfo = {
-    network: hre.network.name,
-    deployer: deployer.address,
-    timestamp: new Date().toISOString(),
-    contracts: {
-      RWAAsset: rwaAddress,
-      YieldToken: pytAddress,
-      PortalYieldVault: vaultAddress,
-      CrossChainBridge: bridgeAddress,
-    },
-    demoAssets: [
-      { tokenId: 1, type: "T-Bill", issuer: "US Treasury", faceValue: "$1,000", yield: "5.20%" },
-      { tokenId: 2, type: "Corporate Bond", issuer: "Apple Inc.", faceValue: "$5,000", yield: "7.50%" },
-      { tokenId: 3, type: "Real Estate", issuer: "Manhattan REIT", faceValue: "$10,000", yield: "8.00%" },
-    ],
-  };
-
-  mkdirSync("./deployments", { recursive: true });
-  writeFileSync(`./deployments/${hre.network.name}.json`, JSON.stringify(deploymentInfo, null, 2));
-  console.log(`\n💾 Deployment info saved to: ./deployments/${hre.network.name}.json`);
-  console.log("=".repeat(60));
+async function deploy(name, ...args) {
+  const contract = await hre.ethers.deployContract(name, args);
+  await contract.waitForDeployment();
+  const address = await contract.getAddress();
+  console.log(`  ${name.padEnd(18)} ${address}  (tx ${contract.deploymentTransaction().hash})`);
+  return contract;
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+async function send(label, txPromise) {
+  const receipt = await (await txPromise).wait();
+  console.log(`  ${label.padEnd(36)} tx ${receipt.hash}`);
+}
+
+async function main() {
+  const signers = await hre.ethers.getSigners();
+  const deployer = signers[0];
+  const relayer = process.env.RELAYER_ADDRESS || (signers[2] ?? deployer).address;
+
+  console.log(`Network ${hre.network.name} (chain ${hre.network.config.chainId})`);
+  console.log(`Deployer ${deployer.address}`);
+  console.log(`Balance  ${hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address))}\n`);
+
+  console.log("Deploying");
+  const rwa = await deploy("RWAAsset");
+  const pyt = await deploy("YieldToken");
+  const vault = await deploy("PortalYieldVault", await rwa.getAddress(), await pyt.getAddress());
+  const bridge = await deploy("CrossChainBridge", await pyt.getAddress());
+
+  console.log("\nConfiguring");
+  await send("PYT minter: vault", pyt.setMinter(await vault.getAddress(), true));
+  await send("PYT minter: bridge", pyt.setMinter(await bridge.getAddress(), true));
+  await send(`Bridge relayer: ${relayer.slice(0, 10)}…`, bridge.setRelayer(relayer, true));
+  await send(`Bridge route: chain ${REMOTE_CHAIN_ID}`, bridge.setSupportedChain(REMOTE_CHAIN_ID, true));
+  await send("Demo mode on", rwa.setDemoMode(true));
+
+  const contracts = {
+    RWAAsset: await rwa.getAddress(),
+    YieldToken: await pyt.getAddress(),
+    PortalYieldVault: await vault.getAddress(),
+    CrossChainBridge: await bridge.getAddress(),
+  };
+  saveDeployment(hre, { role: "home", deployer: deployer.address, relayer, remoteChainId: REMOTE_CHAIN_ID, contracts });
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

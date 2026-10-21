@@ -7,6 +7,8 @@ typechain/
 typechain-types/
 .env
 deployments/localhost.json
+deployments/remote_local.json
+frontend/tsconfig.tsbuildinfo
 *.log
 
 # Frontend

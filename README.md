@@ -1,195 +1,136 @@
-# PortalYield — RWA Yield Protocol on Portaldot Network V3.0
+# PortalYield: RWA yield protocol on Portaldot Network V3.0
 
-> **Track**: Ecosystem DApps | **Hackathon**: Portaldot Network Hacker House
+> Track: Ecosystem DApps. Portaldot Network Hacker House 2026.
 
-PortalYield is a decentralized protocol that tokenizes Real World Assets (RWAs) as ERC-721 NFTs and fractionalize their yield streams into ERC-20 tokens (PYT), all deployed natively on **Portaldot Network V3.0**'s EVM-compatible layer.
+PortalYield tokenizes real-world assets (treasury bills, corporate bonds, real estate) as ERC-721 tokens on Portaldot's EVM layer. Staking an asset mints PYT, an ERC-20 worth $1 per dollar of face value, and the vault pays yield in PYT every second at the asset's fixed rate. PYT can be bridged to other EVM chains and back.
 
----
+## Status
 
-## 🌐 Live Demo
-
-- **DApp**: [https://portalyield.vercel.app](https://portalyield.vercel.app) *(coming soon)*
-- **Portaldot Testnet Explorer**: See contract addresses below
-
----
-
-## 📄 Testnet Deployment (Portaldot EVM Testnet)
-
-| Contract | Address | Tx Hash |
-|---|---|---|
-| RWAAsset (ERC-721) | `TBD` | `TBD` |
-| YieldToken PYT (ERC-20) | `TBD` | `TBD` |
-| PortalYieldVault | `TBD` | `TBD` |
-| CrossChainBridge | `TBD` | `TBD` |
-
-> Addresses will be updated after Portaldot testnet RPC is confirmed live.
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                  PortalYield Protocol                │
-│                                                     │
-│  ┌─────────────┐    stake     ┌──────────────────┐  │
-│  │  RWAAsset   │ ──────────▶  │ PortalYieldVault │  │
-│  │  (ERC-721)  │              │                  │  │
-│  │             │ ◀──────────  │  mint/burn PYT   │  │
-│  │ T-Bills     │   unstake    └──────────────────┘  │
-│  │ Corp Bonds  │                      │              │
-│  │ Real Estate │               mint yield PYT       │
-│  └─────────────┘                      ▼              │
-│                              ┌──────────────────┐   │
-│                              │  YieldToken PYT  │   │
-│                              │    (ERC-20)      │   │
-│                              └──────────────────┘   │
-│                                      │              │
-│                              ┌───────▼──────────┐   │
-│                              │ CrossChainBridge │   │
-│                              │ Portaldot ↔ ETH  │   │
-│                              └──────────────────┘   │
-└─────────────────────────────────────────────────────┘
-```
-
-### How It Works
-
-1. **Tokenize RWA** — Whitelisted issuers mint ERC-721 NFTs representing real-world assets (T-Bills, bonds, real estate) with on-chain metadata: face value, yield rate, maturity date.
-
-2. **Stake NFT → Earn PYT** — Users deposit RWA NFTs into the `PortalYieldVault`. They receive `PYT` (PortalYield Token, ERC-20) proportional to the NFT's face value:
-   - 1 USD cent of face value = 1 PYT (10¹⁶ wei)
-   - Example: $1,000 T-Bill → 1,000 PYT
-
-3. **Claim Yield** — As time passes, users accumulate yield in PYT based on the asset's annual yield rate. Claimable anytime.
-
-4. **Unstake** — Return NFT, burn principal PYT, claim any remaining yield.
-
-5. **Cross-Chain Bridge** — PYT tokens can be bridged to other EVM chains via the `CrossChainBridge`, leveraging Portaldot's multi-chain infrastructure.
-
----
-
-## 🔗 Portaldot V3.0 Integration
-
-| Feature | How PortalYield Uses It |
+| Piece | State |
 |---|---|
-| **EVM Compatibility** | All contracts are Solidity, deployed on Portaldot's EVM layer |
-| **ERC-20 Support** | PYT yield token — tradeable, bridgeable |
-| **ERC-721 Support** | RWA NFTs with rich on-chain metadata |
-| **Multi-Chain** | CrossChainBridge leverages Portaldot's cross-chain messaging |
-| **Modular Architecture** | Vault, token, bridge are independent composable modules |
+| Contracts (4) | Done, 22 tests passing |
+| Web app | Done: claim demo assets, stake, live yield, claim, unstake, bridge both ways |
+| Bridge relayer | Done, local two-chain setup |
+| Portaldot testnet deployment | Pending testnet RPC access |
 
----
+### Testnet deployment
 
-## 📁 Project Structure
+| Contract | Address | Deploy tx |
+|---|---|---|
+| RWAAsset (ERC-721) | TBD | TBD |
+| YieldToken PYT (ERC-20) | TBD | TBD |
+| PortalYieldVault | TBD | TBD |
+| CrossChainBridge | TBD | TBD |
+
+## Architecture
 
 ```
-portaldot_hack/
-├── contracts/
-│   ├── RWAAsset.sol          # ERC-721: Real World Asset NFTs
-│   ├── YieldToken.sol        # ERC-20: PYT yield token
-│   ├── PortalYieldVault.sol  # Core vault: stake, earn, withdraw
-│   └── CrossChainBridge.sol  # Cross-chain PYT bridge
-├── scripts/
-│   └── deploy.js             # Deployment script
-├── test/
-│   └── PortalYield.test.js   # 15 comprehensive tests (all passing)
-├── frontend/                 # Next.js DApp
-├── docs/                     # Architecture & pitch deck
-├── hardhat.config.js
-└── README.md
+            Portaldot (home chain)                          Remote EVM chain
+ ┌──────────────────────────────────────────┐       ┌─────────────────────────────┐
+ │  RWAAsset (ERC-721)                       │       │                             │
+ │    issuer mint / demo claim               │       │                             │
+ │        │ stake            ▲ unstake       │       │                             │
+ │        ▼                  │               │       │                             │
+ │  PortalYieldVault ── mint / burn ──┐      │       │                             │
+ │    accrues yield per second        ▼      │       │                             │
+ │                           YieldToken PYT  │       │  YieldToken PYT             │
+ │                                    ▲      │       │        ▲                    │
+ │  CrossChainBridge ── burn / mint ──┘      │       │  CrossChainBridge           │
+ │    BridgeOutInitiated event ──────────────┼──┐ ┌──┼─▶ bridgeIn (relayer only)   │
+ └──────────────────────────────────────────┘  │ │  └─────────────────────────────┘
+                                               ▼ │
+                                        scripts/relayer.js
+                              (watches both bridges, nonces prevent replay)
 ```
 
----
+### How it works
 
-## 🚀 Quick Start
+1. **Tokenize.** Whitelisted issuers mint an ERC-721 per asset with its issuer, face value, annual yield and maturity stored on-chain. On testnet, demo mode lets any wallet claim one of three sample assets.
+2. **Stake.** The vault takes the NFT and mints 1 PYT per $1 of face value.
+3. **Earn.** Yield accrues per second at the asset's rate and stops at maturity. `getPositions(address)` returns every open position with its pending yield.
+4. **Claim or unstake.** Claim yield any time. Unstaking returns the NFT, burns the principal PYT and pays out remaining yield.
+5. **Bridge.** `bridgeOut` burns PYT and emits an event. The relayer calls `bridgeIn` on the destination bridge, which mints PYT once per `(sourceChain, nonce)`.
 
-### Prerequisites
-- Node.js 18+
-- npm or yarn
+### Portaldot V3.0 features used
 
-### Install
+| Feature | Use |
+|---|---|
+| EVM compatibility | All contracts are Solidity 0.8.26 on Portaldot's EVM layer |
+| ERC-721 | Each real-world asset and its terms |
+| ERC-20 | PYT principal and yield token |
+| Multi-chain | PYT bridge between Portaldot and other EVM chains |
+| Modular architecture | Asset registry, vault, token and bridge are separate contracts wired by permissions |
+
+## Project structure
+
+```
+contracts/
+  RWAAsset.sol           ERC-721 asset registry, issuer whitelist, demo claims
+  YieldToken.sol         PYT ERC-20 with owner-approved minters (vault, bridge)
+  PortalYieldVault.sol   Stake, accrue, claim, unstake, position reads
+  CrossChainBridge.sol   Burn-and-mint bridge with relayer allowlist and replay protection
+scripts/
+  deploy.js              Home-chain deploy + permissions; exports ABIs/addresses to the frontend
+  deploy-remote.js       PYT + bridge on the remote chain
+  relayer.js             Bridge relayer for both directions
+  interact.js            Scripted end-to-end flow
+test/PortalYield.test.js 22 tests
+frontend/                Next.js 15 + wagmi/viem app (landing page at /, app at /app)
+```
+
+## Run it locally
+
+Needs Node.js 18+. Uses five terminals: two chains, the relayer, and the web app, plus one for commands.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/portaldot_hack.git
-cd portaldot_hack
 npm install
+cd frontend && npm install && cd ..
+
+npm test                 # 22 contract tests
+
+npm run node             # terminal 1: home chain (Portaldot stand-in), chain 31337, port 8545
+npm run node:remote      # terminal 2: remote chain (Ethereum stand-in), chain 31338, port 8546
+npm run deploy:local     # deploys to both chains and writes frontend/lib/deployments.json
+npm run relayer          # terminal 3: relays bridge transfers between the two chains
+cd frontend && npm run dev   # terminal 4: http://localhost:3000
 ```
 
-### Compile
+Open [http://localhost:3000/app](http://localhost:3000/app) and choose **Use local dev account**. No browser extension needed; transactions are signed by the local node. Then:
+
+1. Claim a demo asset.
+2. Approve and stake it. PYT appears in your balance.
+3. Use **+30 days** to move the local chain forward and watch yield accrue.
+4. Claim the yield.
+5. Bridge PYT to Ethereum (local) and back. The transfer shows **Delivered** once the relayer mints it.
+6. Unstake to get the asset back. You need the full principal in PYT on the home chain.
+
+MetaMask also works: add network `http://127.0.0.1:8545` with chain ID 31337 and import a Hardhat dev key.
+
+Restarting the chains wipes them, so run `npm run deploy:local` again afterwards.
+
+## Deploy to Portaldot testnet
 
 ```bash
-npx hardhat compile
+cp .env.example .env     # set PRIVATE_KEY, PORTALDOT_RPC_URL, PORTALDOT_CHAIN_ID
+npm run deploy:portaldot
 ```
 
-### Test
+The deployer becomes the relayer unless `RELAYER_ADDRESS` is set, and `REMOTE_CHAIN_ID` sets the bridge route. For the frontend, set `NEXT_PUBLIC_HOME_CHAIN_ID`, `NEXT_PUBLIC_PORTALDOT_RPC_URL` and optionally `NEXT_PUBLIC_PORTALDOT_EXPLORER_URL`.
 
-```bash
-npx hardhat test
-```
+## Known limits
 
-Expected output:
-```
-  PortalYield Protocol
-    RWAAsset (ERC-721)
-      ✔ should mint an RWA NFT successfully
-      ✔ should reject minting with past maturity date
-      ✔ should reject minting by non-whitelisted address
-      ✔ should calculate accrued yield after 30 days
-    YieldToken (ERC-20 PYT)
-      ✔ should have correct name, symbol and decimals
-      ✔ should only allow vault to mint
-    PortalYieldVault
-      ✔ should stake NFT and mint PYT tokens
-      ✔ should accrue yield over 180 days
-      ✔ should allow yield claim and increase PYT balance
-      ✔ should unstake NFT and return to owner
-      ✔ should reject double staking
-    CrossChainBridge
-      ✔ should allow owner to add relayers and chains
-      ✔ should process inbound bridge message and mint PYT
-      ✔ should reject duplicate inbound messages
-      ✔ should reject unauthorized relayers
+- The relayer is a single trusted key. Production would use Portaldot's native cross-chain messaging or a multi-relayer quorum.
+- Yield is minted as new PYT and isn't yet backed by off-chain coupon payments flowing in. That needs an issuer-funded reserve or oracle.
+- `tokensOfOwner` scans all token IDs. That's fine at demo scale; an indexer should replace it.
 
-  15 passing (515ms)
-```
+## Third-party code
 
-### Deploy to Portaldot Testnet
+OpenZeppelin Contracts 5 (MIT), Hardhat, wagmi, viem, Next.js, Tailwind CSS, lucide-react.
 
-```bash
-cp .env.example .env
-# Fill in PRIVATE_KEY and PORTALDOT_RPC_URL in .env
+## Team
 
-npx hardhat run scripts/deploy.js --network portaldot_testnet
-```
+Solo developer.
 
----
-
-## 💡 Key Features
-
-- **Dual-standard protocol**: ERC-721 (assets) + ERC-20 (yield tokens) on Portaldot EVM
-- **Permissioned issuance**: Whitelisted issuers ensure compliance
-- **Real-time yield accrual**: On-chain yield calculation, no oracles needed for accrual
-- **Cross-chain PYT**: Bridge to/from other EVM chains via Portaldot's multi-chain infra
-- **Composable modules**: Vault, token, and bridge are independent; plug into any Portaldot DeFi
-
----
-
-## 🎯 Market Opportunity
-
-The Real World Asset tokenization market is projected to reach **$16 trillion by 2030** (BlackRock, BCG estimates). PortalYield brings institutional-grade yield products to the Portaldot ecosystem with:
-
-- **Institutional access**: T-Bills, bonds, real estate on-chain
-- **Retail participation**: Any user can earn yield via PYT tokens
-- **Cross-chain liquidity**: Portaldot's bridge makes PYT usable everywhere
-
----
-
-## 👤 Team
-
-Solo developer — [Your Name]
-
----
-
-## 📜 License
+## License
 
 MIT

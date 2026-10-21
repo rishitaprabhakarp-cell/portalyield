@@ -42,7 +42,19 @@ contract PortalYieldVault is ReentrancyGuard, Pausable, Ownable, IERC721Receiver
         uint256 annualYieldBPS;  // locked-in yield rate
         uint256 pytMinted;       // PYT minted for this stake
         uint256 lastClaimAt;     // timestamp of last yield claim
+        uint256 maturityDate;    // yield stops accruing here
         bool isStaked;
+    }
+
+    struct Position {
+        uint256 tokenId;
+        uint256 faceValue;
+        uint256 annualYieldBPS;
+        uint256 pytMinted;
+        uint256 stakedAt;
+        uint256 lastClaimAt;
+        uint256 maturityDate;
+        uint256 pendingYield;
     }
 
     // tokenId => Stake info
@@ -50,6 +62,7 @@ contract PortalYieldVault is ReentrancyGuard, Pausable, Ownable, IERC721Receiver
 
     // staker => list of staked tokenIds
     mapping(address => uint256[]) public stakerTokens;
+    mapping(address => mapping(uint256 => bool)) private _inStakerList;
 
     // Total PYT minted across all stakes
     uint256 public totalPYTMinted;
@@ -107,10 +120,14 @@ contract PortalYieldVault is ReentrancyGuard, Pausable, Ownable, IERC721Receiver
             annualYieldBPS: meta.annualYieldBPS,
             pytMinted: pytAmount,
             lastClaimAt: block.timestamp,
+            maturityDate: meta.maturityDate,
             isStaked: true
         });
 
-        stakerTokens[msg.sender].push(tokenId);
+        if (!_inStakerList[msg.sender][tokenId]) {
+            _inStakerList[msg.sender][tokenId] = true;
+            stakerTokens[msg.sender].push(tokenId);
+        }
         totalPYTMinted += pytAmount;
 
         emit NFTStaked(tokenId, msg.sender, meta.faceValue, pytAmount);
@@ -180,6 +197,36 @@ contract PortalYieldVault is ReentrancyGuard, Pausable, Ownable, IERC721Receiver
     }
 
     /**
+     * @notice Open positions for `staker`, with yield pending as of this block
+     */
+    function getPositions(address staker) external view returns (Position[] memory) {
+        uint256[] storage ids = stakerTokens[staker];
+        uint256 open;
+        for (uint256 i = 0; i < ids.length; i++) {
+            Stake storage s = stakes[ids[i]];
+            if (s.isStaked && s.staker == staker) open++;
+        }
+
+        Position[] memory out = new Position[](open);
+        uint256 n;
+        for (uint256 i = 0; i < ids.length && n < open; i++) {
+            Stake storage s = stakes[ids[i]];
+            if (!s.isStaked || s.staker != staker) continue;
+            out[n++] = Position({
+                tokenId: s.tokenId,
+                faceValue: s.faceValue,
+                annualYieldBPS: s.annualYieldBPS,
+                pytMinted: s.pytMinted,
+                stakedAt: s.stakedAt,
+                lastClaimAt: s.lastClaimAt,
+                maturityDate: s.maturityDate,
+                pendingYield: _pendingYield(s.tokenId)
+            });
+        }
+        return out;
+    }
+
+    /**
      * @notice Get vault stats
      */
     function getVaultStats() external view returns (
@@ -200,7 +247,9 @@ contract PortalYieldVault is ReentrancyGuard, Pausable, Ownable, IERC721Receiver
         Stake storage s = stakes[tokenId];
         if (!s.isStaked) return 0;
 
-        uint256 elapsed = block.timestamp - s.lastClaimAt;
+        uint256 end = block.timestamp < s.maturityDate ? block.timestamp : s.maturityDate;
+        if (end <= s.lastClaimAt) return 0;
+        uint256 elapsed = end - s.lastClaimAt;
         // yield = pytMinted * annualYieldBPS / 10000 * (elapsed / 365 days)
         // pytMinted already represents face value in PYT
         return (s.pytMinted * s.annualYieldBPS * elapsed) / (10000 * 365 days);

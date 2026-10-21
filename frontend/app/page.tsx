@@ -90,7 +90,7 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-mint-100/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <Logo />
-          <a href="#estimate" className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white hover:bg-ink/85">
+          <a href="/app" className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white hover:bg-ink/85">
             Launch app
           </a>
         </div>
@@ -191,7 +191,7 @@ export default function Home() {
           <p className="mt-4 text-lg text-ink/80">
             Mint a demo asset on Portaldot testnet and watch its yield accrue.
           </p>
-          <a href="#estimate" className="mt-8 inline-block rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-white hover:bg-ink/85">
+          <a href="/app" className="mt-8 inline-block rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-white hover:bg-ink/85">
             Launch app
           </a>
         </div>

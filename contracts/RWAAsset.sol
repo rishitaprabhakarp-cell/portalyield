@@ -48,6 +48,9 @@ contract RWAAsset is ERC721, ERC721URIStorage, Ownable {
     // Track total face value locked
     uint256 public totalFaceValueLocked;
 
+    bool public demoMode;
+    mapping(address => mapping(uint8 => bool)) public demoClaimed;
+
     // Events
     event AssetMinted(
         uint256 indexed tokenId,
@@ -59,6 +62,7 @@ contract RWAAsset is ERC721, ERC721URIStorage, Ownable {
     );
     event IssuerWhitelisted(address indexed issuer, bool status);
     event AssetDeactivated(uint256 indexed tokenId);
+    event DemoModeUpdated(bool enabled);
 
     modifier onlyWhitelistedIssuer() {
         require(
@@ -92,6 +96,52 @@ contract RWAAsset is ERC721, ERC721URIStorage, Ownable {
         uint256 maturityDate,
         uint256 annualYieldBPS
     ) external onlyWhitelistedIssuer returns (uint256) {
+        return _mintAsset(to, uri, assetType, issuer, faceValue, maturityDate, annualYieldBPS);
+    }
+
+    /**
+     * @notice Testnet-only: anyone can claim one of three sample assets while demo mode is on.
+     * @param kind 0 = T-Bill ($1,000 @ 5.2%), 1 = corporate bond ($5,000 @ 7.5%), 2 = real estate ($10,000 @ 8%)
+     */
+    function claimDemoAsset(uint8 kind) external returns (uint256) {
+        require(demoMode, "RWAAsset: demo mode is off");
+        require(kind <= 2, "RWAAsset: unknown demo asset");
+        require(!demoClaimed[msg.sender][kind], "RWAAsset: demo asset already claimed");
+        demoClaimed[msg.sender][kind] = true;
+
+        if (kind == 0) {
+            return _mintAsset(msg.sender, "ipfs://portalyield/demo/tbill", AssetType.TREASURY_BILL, "US Treasury", 100000, block.timestamp + 365 days, 520);
+        }
+        if (kind == 1) {
+            return _mintAsset(msg.sender, "ipfs://portalyield/demo/bond", AssetType.CORPORATE_BOND, "Apple Inc.", 500000, block.timestamp + 730 days, 750);
+        }
+        return _mintAsset(msg.sender, "ipfs://portalyield/demo/reit", AssetType.REAL_ESTATE, "Manhattan REIT", 1000000, block.timestamp + 730 days, 800);
+    }
+
+    function setDemoMode(bool enabled) external onlyOwner {
+        demoMode = enabled;
+        emit DemoModeUpdated(enabled);
+    }
+
+    /// @notice Token IDs currently held by `account`. Linear scan; intended for off-chain reads.
+    function tokensOfOwner(address account) external view returns (uint256[] memory) {
+        uint256[] memory ids = new uint256[](balanceOf(account));
+        uint256 found;
+        for (uint256 id = 1; id <= _tokenIdCounter && found < ids.length; id++) {
+            if (_ownerOf(id) == account) ids[found++] = id;
+        }
+        return ids;
+    }
+
+    function _mintAsset(
+        address to,
+        string memory uri,
+        AssetType assetType,
+        string memory issuer,
+        uint256 faceValue,
+        uint256 maturityDate,
+        uint256 annualYieldBPS
+    ) internal returns (uint256) {
         require(faceValue > 0, "RWAAsset: face value must be positive");
         require(maturityDate > block.timestamp, "RWAAsset: invalid maturity date");
         require(annualYieldBPS <= 10000, "RWAAsset: yield cannot exceed 100%");
