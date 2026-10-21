@@ -1,409 +1,211 @@
-"use client";
+import { Landmark, Coins, ShieldCheck } from "lucide-react";
+import YieldBars from "@/components/YieldBars";
+import YieldEstimator from "@/components/YieldEstimator";
+import { BridgeCard, PositionCard, ProofCard, TokenizeCard } from "@/components/ProductCards";
 
-import { useState } from "react";
-import { TrendingUp, Shield, Zap, Globe, ChevronRight, ArrowRight, Lock, Layers, Activity } from "lucide-react";
+const GITHUB_URL = "https://github.com/YOUR_USERNAME/portaldot_hack";
 
-const MOCK_ASSETS = [
+function Logo() {
+  return (
+    <a href="#" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+        <circle cx="8" cy="11" r="7" fill="#cbb4ff" />
+        <circle cx="14" cy="11" r="7" fill="#79e0cc" fillOpacity="0.85" />
+      </svg>
+      PortalYield
+    </a>
+  );
+}
+
+const PILLARS = [
   {
-    id: 1,
-    type: "T-Bill",
-    issuer: "US Treasury",
-    faceValue: "$1,000",
-    yield: "5.20%",
-    maturity: "Oct 2027",
-    status: "Active",
-    pytEarned: "1,000 PYT",
-    accruedYield: "14.2 PYT",
+    icon: Landmark,
+    title: "Real assets, real rates",
+    body: "Treasury bills, corporate bonds and real estate, each minted with its face value, yield and maturity on Portaldot.",
   },
   {
-    id: 2,
-    type: "Corporate Bond",
-    issuer: "Apple Inc.",
-    faceValue: "$5,000",
-    yield: "7.50%",
-    maturity: "Oct 2028",
-    status: "Staked",
-    pytEarned: "5,000 PYT",
-    accruedYield: "71.0 PYT",
+    icon: Coins,
+    title: "Liquid from day one",
+    body: "Staking an asset mints PYT, an ERC-20 you can hold, trade or bridge while the asset keeps earning.",
   },
   {
-    id: 3,
-    type: "Real Estate",
-    issuer: "Manhattan REIT",
-    faceValue: "$10,000",
-    yield: "8.00%",
-    maturity: "Oct 2028",
-    status: "Active",
-    pytEarned: "10,000 PYT",
-    accruedYield: "152.0 PYT",
+    icon: ShieldCheck,
+    title: "Yield you can check",
+    body: "Accrual is computed by the vault contract every second. No spreadsheets, no monthly statements.",
   },
 ];
 
-const VAULT_STATS = {
-  totalTVL: "$16,000",
-  totalPYT: "16,000 PYT",
-  totalYieldPaid: "237.2 PYT",
-  activeAssets: 3,
-};
+const FEATURES = [
+  {
+    title: "Tokenize an asset in one transaction",
+    bullets: [
+      "Approved issuers mint each asset as an ERC-721 token with its terms stored onchain",
+      "Face value, annual yield and maturity date can't be edited after minting",
+      "Matured or retired assets are marked inactive and stop earning",
+    ],
+    card: <TokenizeCard />,
+    panel: "from-mint-100 to-lilac-50",
+  },
+  {
+    title: "Stake it and earn every second",
+    bullets: [
+      "Deposit an asset into the vault and receive 1 PYT for every dollar of face value",
+      "Yield accrues continuously at the asset's fixed rate",
+      "Claim whenever you like, or unstake to get the asset back",
+    ],
+    card: <PositionCard />,
+    panel: "from-lilac-50 to-mint-100",
+  },
+  {
+    title: "Move PYT to other chains",
+    bullets: [
+      "Bridge PYT from Portaldot to Ethereum and other EVM networks",
+      "Every transfer carries a nonce, so a message can't be replayed",
+      "Only trusted relayers can complete a transfer on the destination chain",
+    ],
+    card: <BridgeCard />,
+    panel: "from-mint-100 to-mint-50",
+  },
+  {
+    title: "Every step leaves a receipt",
+    bullets: [
+      "Minting, staking, claiming and bridging all emit onchain events",
+      "Look up any position by transaction hash on the Portaldot explorer",
+      "Contracts are open source and covered by 15 automated tests",
+    ],
+    card: <ProofCard />,
+    panel: "from-lilac-50 to-lilac-100",
+  },
+];
+
+const STATS = [
+  ["3", "asset classes supported at launch: treasuries, bonds and real estate"],
+  ["5.2–8%", "fixed annual yield across the demo assets"],
+  ["15/15", "contract tests passing for minting, staking, yield and bridging"],
+];
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"assets" | "vault" | "bridge">("assets");
-  const [connected, setConnected] = useState(false);
-
   return (
-    <div className="min-h-screen" style={{ background: "var(--background)" }}>
-
-      {/* Navigation */}
-      <nav className="glass border-b border-portal-900/40 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-portal-500 to-yield-green flex items-center justify-center">
-              <TrendingUp size={16} className="text-white" />
-            </div>
-            <span className="text-xl font-semibold tracking-tight">
-              Portal<span className="text-portal-400">Yield</span>
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
-            <button onClick={() => setActiveTab("assets")} className={`hover:text-white transition-colors ${activeTab === "assets" ? "text-portal-400" : ""}`}>Assets</button>
-            <button onClick={() => setActiveTab("vault")} className={`hover:text-white transition-colors ${activeTab === "vault" ? "text-portal-400" : ""}`}>Vault</button>
-            <button onClick={() => setActiveTab("bridge")} className={`hover:text-white transition-colors ${activeTab === "bridge" ? "text-portal-400" : ""}`}>Bridge</button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs text-yield-green bg-yield-green/10 px-3 py-1.5 rounded-full border border-yield-green/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-yield-green animate-pulse" />
-              Portaldot Testnet
-            </div>
-            <button
-              onClick={() => setConnected(!connected)}
-              className="bg-portal-600 hover:bg-portal-500 text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              {connected ? "0x1a2b...3c4d" : "Connect Wallet"}
-            </button>
-          </div>
+    <>
+      <header className="sticky top-0 z-40 bg-mint-100/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          <Logo />
+          <a href="#estimate" className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white hover:bg-ink/85">
+            Launch app
+          </a>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero */}
-      <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 text-xs text-portal-400 bg-portal-950/60 border border-portal-800/40 px-4 py-2 rounded-full mb-8">
-            <Zap size={12} />
-            Built on Portaldot Network V3.0 · EVM Compatible
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-none tracking-tight">
-            Real World Assets,<br />
-            <span className="gradient-text">on-chain yield.</span>
+      <section className="relative overflow-hidden bg-gradient-to-b from-mint-100 via-lilac-50 to-lilac-100 pt-16">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <h1 className="text-5xl font-semibold leading-[1.02] tracking-display sm:text-[64px]">
+            Earn on real-world assets, onchain
           </h1>
-
-          <p className="text-gray-400 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Tokenize T-Bills, bonds, and real estate as NFTs. Stake them to earn PYT yield tokens.
-            Bridge across chains via Portaldot's multi-chain infrastructure.
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink/80">
+            Tokenize treasuries, bonds and real estate on Portaldot. Stake them, receive PYT, and collect yield you can verify.
           </p>
-
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => { setConnected(true); setActiveTab("vault"); }}
-              className="flex items-center gap-2 bg-portal-600 hover:bg-portal-500 text-white px-8 py-3.5 rounded-xl font-semibold transition-all hover:scale-105"
-            >
-              Launch App <ArrowRight size={18} />
-            </button>
-            <a
-              href="https://github.com/YOUR_USERNAME/portaldot_hack"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 border border-portal-700/50 hover:border-portal-500 text-gray-300 hover:text-white px-8 py-3.5 rounded-xl font-semibold transition-all"
-            >
-              View Code <ChevronRight size={18} />
+          <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full bg-white/70 p-1.5 ring-1 ring-white">
+            <a href="#estimate" className="rounded-full bg-lilac-300 px-6 py-3 text-sm font-medium hover:bg-lilac-300/80">
+              Estimate your yield
+            </a>
+            <a href={GITHUB_URL} className="rounded-full px-6 py-3 text-sm font-medium hover:bg-white">
+              Read the contracts
             </a>
           </div>
+          <p className="mt-3 text-xs text-muted">ERC-20 and ERC-721 contracts on Portaldot V3.0&apos;s EVM layer</p>
         </div>
 
-        {/* Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          {[
-            { label: "Total Value Locked", value: VAULT_STATS.totalTVL, icon: <Lock size={16} /> },
-            { label: "PYT in Circulation", value: VAULT_STATS.totalPYT, icon: <Activity size={16} /> },
-            { label: "Yield Distributed", value: VAULT_STATS.totalYieldPaid, icon: <TrendingUp size={16} /> },
-            { label: "RWA Assets", value: VAULT_STATS.activeAssets, icon: <Layers size={16} /> },
-          ].map((stat) => (
-            <div key={stat.label} className="glass rounded-2xl p-6">
-              <div className="flex items-center gap-2 text-portal-400 mb-3 text-sm">
-                {stat.icon}
-                <span>{stat.label}</span>
-              </div>
-              <div className="text-2xl font-bold stat-glow">{stat.value}</div>
+        <div id="estimate" className="relative z-10 mx-auto mt-14 max-w-3xl scroll-mt-24 px-6">
+          <div className="rounded-3xl bg-white/50 p-2 ring-1 ring-white">
+            <YieldEstimator />
+          </div>
+        </div>
+
+        <YieldBars className="relative -mt-20" />
+      </section>
+
+      <section className="border-b border-line">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-10 gap-y-4 px-6 py-8 text-sm text-muted">
+          <span>Built with</span>
+          {["Portaldot V3.0", "Solidity 0.8.26", "OpenZeppelin 5", "ERC-20", "ERC-721", "Hardhat"].map((t) => (
+            <span key={t} className="text-base font-semibold text-ink">{t}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <h2 className="max-w-xl text-3xl font-medium uppercase leading-tight tracking-tight sm:text-4xl">
+          The yield layer for Portaldot
+        </h2>
+        <p className="mt-4 text-lg text-ink/80">Bring off-chain income onchain without giving up liquidity.</p>
+        <div className="mt-10 grid gap-3 md:grid-cols-3">
+          {PILLARS.map(({ icon: Icon, title, body }) => (
+            <div key={title} className="rounded-md bg-mint-100 p-6">
+              <Icon size={24} strokeWidth={1.75} />
+              <h3 className="mt-10 text-xl font-medium">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink/80">{body}</p>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Main Content Tabs */}
-        <div className="flex gap-2 mb-6">
-          {(["assets", "vault", "bridge"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-medium capitalize transition-all ${
-                activeTab === tab
-                  ? "bg-portal-600 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+      <section className="mx-auto max-w-6xl px-6 pb-12">
+        <h2 className="mx-auto max-w-3xl text-center text-4xl font-medium leading-[1.05] tracking-display sm:text-[56px]">
+          Treasuries: onchain. Bonds: onchain. Yield: yours.
+        </h2>
 
-        {/* Assets Tab */}
-        {activeTab === "assets" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold text-gray-200">Available RWA Assets</h2>
-              <span className="text-sm text-gray-400">Demo data — connect wallet for live Portaldot testnet</span>
-            </div>
-
-            {MOCK_ASSETS.map((asset) => (
-              <div key={asset.id} className="glass rounded-2xl p-6 hover:border-portal-700/40 transition-all pulse-border">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${
-                      asset.type === "T-Bill" ? "bg-yield-green/20 text-yield-green" :
-                      asset.type === "Corporate Bond" ? "bg-portal-500/20 text-portal-400" :
-                      "bg-yield-gold/20 text-yield-gold"
-                    }`}>
-                      {asset.type === "T-Bill" ? "T" : asset.type === "Corporate Bond" ? "B" : "RE"}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-100">#{asset.id} {asset.type}</div>
-                      <div className="text-sm text-gray-400">{asset.issuer}</div>
-                    </div>
-                  </div>
-
-                  <div className={`text-xs px-3 py-1 rounded-full border ${
-                    asset.status === "Staked"
-                      ? "bg-portal-500/10 text-portal-400 border-portal-500/20"
-                      : "bg-yield-green/10 text-yield-green border-yield-green/20"
-                  }`}>
-                    {asset.status}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mt-6 pt-4 border-t border-white/5">
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Face Value</div>
-                    <div className="font-mono font-medium">{asset.faceValue}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">APY</div>
-                    <div className="font-mono font-medium text-yield-green">{asset.yield}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Maturity</div>
-                    <div className="font-mono font-medium">{asset.maturity}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">PYT Minted</div>
-                    <div className="font-mono font-medium text-portal-400">{asset.pytEarned}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Accrued Yield</div>
-                    <div className="font-mono font-medium text-yield-gold">{asset.accruedYield}</div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-4">
-                  {asset.status === "Active" ? (
-                    <button
-                      onClick={() => setActiveTab("vault")}
-                      className="flex-1 bg-portal-600/20 hover:bg-portal-600/40 border border-portal-600/30 text-portal-300 py-2.5 rounded-xl text-sm font-medium transition-all"
-                    >
-                      Stake in Vault →
-                    </button>
-                  ) : (
-                    <>
-                      <button className="flex-1 bg-yield-green/10 hover:bg-yield-green/20 border border-yield-green/20 text-yield-green py-2.5 rounded-xl text-sm font-medium transition-all">
-                        Claim {asset.accruedYield}
-                      </button>
-                      <button className="px-6 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 py-2.5 rounded-xl text-sm font-medium transition-all">
-                        Unstake
-                      </button>
-                    </>
-                  )}
-                </div>
+        <div className="mt-20 space-y-28">
+          {FEATURES.map((f, i) => (
+            <div key={f.title} className="grid items-center gap-12 md:grid-cols-2">
+              <div className={i % 2 ? "md:order-2" : ""}>
+                <h3 className="text-3xl font-medium leading-tight tracking-tight">{f.title}</h3>
+                <ul className="mt-6 list-disc space-y-3 pl-5 text-ink/85 marker:text-ink">
+                  {f.bullets.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Vault Tab */}
-        {activeTab === "vault" && (
-          <div className="glass rounded-2xl p-8">
-            <h2 className="text-xl font-semibold mb-2">PortalYield Vault</h2>
-            <p className="text-gray-400 text-sm mb-8">
-              Stake your RWA NFTs to mint PYT tokens and earn continuous yield on Portaldot Network V3.0.
-            </p>
-
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-portal-950/60 border border-portal-800/30 rounded-xl p-6">
-                <h3 className="font-medium mb-4 text-gray-200">How Staking Works</h3>
-                {[
-                  ["1", "Mint RWA NFT", "Whitelisted issuers tokenize real-world assets as ERC-721 NFTs"],
-                  ["2", "Approve Vault", "Approve the PortalYieldVault contract to transfer your NFT"],
-                  ["3", "Stake → Receive PYT", "Lock your NFT, instantly receive PYT proportional to face value"],
-                  ["4", "Claim Yield", "Yield accrues continuously — claim PYT anytime"],
-                ].map(([num, title, desc]) => (
-                  <div key={num} className="flex gap-4 mb-4 last:mb-0">
-                    <div className="w-7 h-7 rounded-lg bg-portal-600/30 text-portal-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{num}</div>
-                    <div>
-                      <div className="font-medium text-sm text-gray-200">{title}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">{desc}</div>
-                    </div>
-                  </div>
-                ))}
+              <div className={`rounded-sm bg-gradient-to-b ${f.panel} px-8 py-12 sm:px-12`}>
+                <div className="rounded-xl bg-white/60 p-2 ring-1 ring-white">{f.card}</div>
               </div>
-
-              <div className="bg-portal-950/60 border border-portal-800/30 rounded-xl p-6">
-                <h3 className="font-medium mb-4 text-gray-200">Yield Formula</h3>
-                <div className="font-mono text-xs bg-black/40 rounded-lg p-4 text-gray-300 leading-relaxed">
-                  <div className="text-portal-400 mb-2">// PYT minting ratio</div>
-                  <div>1 USD cent = 1e16 PYT wei</div>
-                  <div className="mt-3 text-portal-400">// Daily yield accrual</div>
-                  <div>yield = (PYT × APY_BPS × elapsed)</div>
-                  <div className="pl-8">/ (10000 × 365 days)</div>
-                  <div className="mt-3 text-gray-500">// Example: $1,000 T-Bill @ 5.2%</div>
-                  <div className="text-yield-green">→ 1,000 PYT + ~52 PYT/year</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-portal-800/30 rounded-xl p-6 text-center">
-              <p className="text-gray-400 text-sm mb-4">
-                {connected
-                  ? "Your staked positions will appear here. Connect to Portaldot testnet to interact."
-                  : "Connect your wallet to Portaldot Testnet to start staking."}
-              </p>
-              <button
-                onClick={() => setConnected(true)}
-                className="bg-portal-600 hover:bg-portal-500 text-white px-8 py-3 rounded-xl font-semibold transition-all hover:scale-105"
-              >
-                {connected ? "View Positions on Portaldot Testnet" : "Connect Wallet"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Bridge Tab */}
-        {activeTab === "bridge" && (
-          <div className="glass rounded-2xl p-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Globe size={20} className="text-portal-400" />
-              <h2 className="text-xl font-semibold">Cross-Chain PYT Bridge</h2>
-            </div>
-            <p className="text-gray-400 text-sm mb-8">
-              Bridge PYT tokens between Portaldot Network and other EVM chains using Portaldot V3.0's multi-chain infrastructure.
-            </p>
-
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              {/* Source Chain */}
-              <div className="bg-portal-950/60 border border-portal-800/30 rounded-xl p-5">
-                <div className="text-xs text-gray-500 mb-2">From</div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-portal-600/30 flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-portal-400" />
-                  </div>
-                  <span className="font-medium">Portaldot Testnet</span>
-                  <span className="ml-auto text-xs text-yield-green bg-yield-green/10 px-2 py-1 rounded-full">Connected</span>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 mb-2 block">PYT Amount</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-portal-500/50"
-                  />
-                  <div className="text-xs text-gray-500 mt-2">Balance: 5,237.2 PYT</div>
-                </div>
-              </div>
-
-              {/* Destination Chain */}
-              <div className="bg-portal-950/60 border border-portal-800/30 rounded-xl p-5">
-                <div className="text-xs text-gray-500 mb-2">To</div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-gray-600/30 flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-gray-400" />
-                  </div>
-                  <select className="bg-transparent font-medium focus:outline-none text-gray-200">
-                    <option>Ethereum Mainnet</option>
-                    <option>Polygon</option>
-                    <option>BNB Chain</option>
-                    <option>Arbitrum</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 mb-2 block">Recipient Address</label>
-                  <input
-                    type="text"
-                    placeholder="0x..."
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-portal-500/50"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-portal-950/40 border border-portal-800/20 rounded-xl p-4 mb-6 text-sm">
-              <div className="flex justify-between text-gray-400 mb-2">
-                <span>Bridge fee</span><span className="text-gray-200">~0.001 POT</span>
-              </div>
-              <div className="flex justify-between text-gray-400 mb-2">
-                <span>Estimated time</span><span className="text-gray-200">~2 minutes</span>
-              </div>
-              <div className="flex justify-between text-gray-400">
-                <span>Powered by</span><span className="text-portal-400">Portaldot Cross-Chain Messaging</span>
-              </div>
-            </div>
-
-            <button className="w-full bg-portal-600 hover:bg-portal-500 text-white py-4 rounded-xl font-semibold text-lg transition-all hover:scale-[1.01] flex items-center justify-center gap-2">
-              Bridge PYT Tokens <ArrowRight size={20} />
-            </button>
-
-            <div className="mt-6 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl text-xs text-yellow-400/80">
-              <strong>Portaldot V3.0 Integration:</strong> The CrossChainBridge contract locks PYT on Portaldot and emits events that trusted relayers monitor. Relayers call bridgeIn() on destination chains to mint equivalent PYT. In production, this integrates with Portaldot's native XCM/IBC messaging layer.
-            </div>
-          </div>
-        )}
-
-        {/* Portaldot V3.0 Feature Badges */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
-          {[
-            { icon: <Shield size={18} />, title: "EVM Compatible", desc: "Full Solidity/Solidity contract support on Portaldot V3.0" },
-            { icon: <Layers size={18} />, title: "WASM Ready", desc: "Modular architecture — ink! WASM contracts supported natively" },
-            { icon: <Globe size={18} />, title: "Multi-Chain", desc: "Cross-chain PYT bridging via Portaldot's native infra" },
-            { icon: <Zap size={18} />, title: "ERC-20 & ERC-721", desc: "Both token standards fully operational on Portaldot" },
-          ].map((feat) => (
-            <div key={feat.title} className="glass rounded-xl p-5">
-              <div className="text-portal-400 mb-3">{feat.icon}</div>
-              <div className="font-semibold text-sm mb-1">{feat.title}</div>
-              <div className="text-xs text-gray-400 leading-relaxed">{feat.desc}</div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-portal-900/30 mt-20 py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-gray-500 text-sm">
-            PortalYield — Portaldot Network Hacker House 2026
-          </div>
-          <div className="flex items-center gap-6 text-sm text-gray-500">
-            <a href="https://github.com/YOUR_USERNAME/portaldot_hack" className="hover:text-gray-300">GitHub</a>
-            <a href="https://discord.gg/portaldot" className="hover:text-gray-300">Portaldot Discord</a>
-          </div>
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <h2 className="text-center text-4xl font-medium tracking-display">Built to be checked, not trusted</h2>
+        <div className="mt-12 grid gap-10 border-t border-line pt-10 md:grid-cols-3">
+          {STATS.map(([n, label]) => (
+            <div key={n}>
+              <p className="text-6xl font-medium tracking-display">{n}</p>
+              <p className="mt-3 max-w-xs text-sm text-ink/80">{label}</p>
+            </div>
+          ))}
         </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-gradient-to-b from-mint-100 to-lilac-100 pt-20">
+        <div className="mx-auto max-w-2xl px-6 text-center">
+          <h2 className="text-5xl font-semibold leading-[1.02] tracking-display">Your assets should earn while they wait</h2>
+          <p className="mt-4 text-lg text-ink/80">
+            Mint a demo asset on Portaldot testnet and watch its yield accrue.
+          </p>
+          <a href="#estimate" className="mt-8 inline-block rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-white hover:bg-ink/85">
+            Launch app
+          </a>
+        </div>
+        <YieldBars className="mt-16" />
+      </section>
+
+      <footer className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted sm:flex-row">
+        <Logo />
+        <div className="flex gap-6">
+          <a href={GITHUB_URL} className="hover:text-ink">GitHub</a>
+          <a href="https://discord.gg/portaldot" className="hover:text-ink">Portaldot Discord</a>
+        </div>
+        <span>Built for the Portaldot Hacker House 2026</span>
       </footer>
-    </div>
+    </>
   );
 }

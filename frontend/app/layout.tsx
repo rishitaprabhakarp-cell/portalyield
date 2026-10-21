@@ -2,17 +2,21 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PortalYield — RWA Yield Protocol on Portaldot",
-  description: "Tokenize Real World Assets. Earn on-chain yield. Powered by Portaldot Network V3.0.",
-  openGraph: {
-    title: "PortalYield",
-    description: "RWA Yield Protocol on Portaldot Network V3.0",
-  },
+  title: "PortalYield: earn on real-world assets on Portaldot",
+  description: "Tokenize treasuries, bonds and real estate on Portaldot. Stake them and earn yield you can verify onchain.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen">{children}</body>
     </html>
   );

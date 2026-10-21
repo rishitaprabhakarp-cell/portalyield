@@ -8,26 +8,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        portal: {
-          50: "#f0f4ff",
-          100: "#e0e9ff",
-          200: "#c7d7fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
-          950: "#1e1b4b",
+        ink: "#111318",
+        muted: "#5d636b",
+        line: "#e4e8e6",
+        mint: {
+          50: "#f1f7f4",
+          100: "#e3efea",
+          200: "#cfe5dc",
         },
-        yield: {
-          green: "#10b981",
-          gold: "#f59e0b",
+        lilac: {
+          50: "#f5f1ff",
+          100: "#ece5ff",
+          300: "#cbb4ff",
+          500: "#9b78f0",
         },
+        aqua: "#79e0cc",
+        gain: "#1f9d6f",
       },
       fontFamily: {
-        mono: ["'JetBrains Mono'", "monospace"],
+        sans: ["'Instrument Sans'", "Arial", "sans-serif"],
+      },
+      letterSpacing: {
+        display: "-0.04em",
       },
     },
   },
