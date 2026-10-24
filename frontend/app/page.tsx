@@ -4,7 +4,7 @@ import Guilloche from "@/components/Guilloche";
 import AssetCertificate, { type Certificate } from "@/components/AssetCertificate";
 import { BridgeCard, PositionCard, ProofCard, TokenizeCard } from "@/components/ProductCards";
 
-const GITHUB_URL = "https://github.com/YOUR_USERNAME/portaldot_hack";
+const GITHUB_URL = "https://github.com/rishitaprabhakarp-cell/portalyield";
 
 function Logo({ light = false }: { light?: boolean }) {
   return (
