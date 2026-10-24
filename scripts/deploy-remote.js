@@ -23,7 +23,7 @@ async function main() {
   await (await bridge.setSupportedChain(HOME_CHAIN_ID, true)).wait();
   console.log(`  Bridge minter set, relayer ${relayer}, route to chain ${HOME_CHAIN_ID}`);
 
-  saveDeployment(hre, {
+  await saveDeployment(hre, {
     role: "remote",
     deployer: deployer.address,
     relayer,

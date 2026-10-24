@@ -11,7 +11,8 @@
     "deploy:local": "hardhat run scripts/deploy.js --network localhost && hardhat run scripts/deploy-remote.js --network remote_local",
     "relayer": "node scripts/relayer.js",
     "interact:local": "hardhat run scripts/interact.js --network localhost",
-    "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot_testnet"
+    "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot_testnet",
+    "interact:portaldot": "hardhat run scripts/interact.js --network portaldot_testnet"
   },
   "keywords": [],
   "author": "",

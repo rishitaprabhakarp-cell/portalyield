@@ -9,9 +9,17 @@ PortalYield tokenizes real-world assets (treasury bills, corporate bonds, real e
 | Piece | State |
 |---|---|
 | Contracts (4) | Done, 22 tests passing |
-| Web app | Done: claim demo assets, stake, live yield, claim, unstake, bridge both ways |
-| Bridge relayer | Done, local two-chain setup |
-| Portaldot testnet deployment | Pending testnet RPC access |
+| Web app | Done: landing page, wallet connect, claim demo assets, stake, live yield, claim, unstake, bridge both ways |
+| Bridge relayer | Done, tested on a local two-chain setup |
+| Deploy and interaction scripts | Done, record every contract address and tx hash in `deployments/<network>.json` |
+| Portaldot testnet deployment | Waiting on testnet RPC access from the Portaldot team |
+
+### Outstanding
+
+- Deploy to the Portaldot testnet and fill in the table below (`npm run deploy:portaldot`, then `npm run interact:portaldot`).
+- Host the web app against the testnet contracts.
+- Run the relayer against Portaldot testnet and a public EVM testnet (Sepolia), so the bridge works outside a local setup.
+- Demo video and pitch deck for the final submission.
 
 ### Testnet deployment
 
@@ -21,6 +29,15 @@ PortalYield tokenizes real-world assets (treasury bills, corporate bonds, real e
 | YieldToken PYT (ERC-20) | TBD | TBD |
 | PortalYieldVault | TBD | TBD |
 | CrossChainBridge | TBD | TBD |
+
+## Development log
+
+| Date | Work |
+|---|---|
+| Oct 17 | Core contracts: RWA asset registry (ERC-721), PYT token (ERC-20), staking vault with per-second yield, burn-and-mint bridge. First frontend scaffold. |
+| Oct 20 | End-to-end interaction script; repo cleanup. |
+| Oct 21 | Contract hardening: minter roles, yield capped at maturity, position reads, demo mode, duplicate-position fix (22 tests). Working web app with wallet connect, staking, live yield and a two-chain bridge with relayer. Landing page redesign. |
+| Oct 24 | Testnet-ready deploy and interaction scripts that record all tx hashes; check-in README. |
 
 ## Architecture
 
@@ -111,11 +128,14 @@ Restarting the chains wipes them, so run `npm run deploy:local` again afterwards
 ## Deploy to Portaldot testnet
 
 ```bash
-cp .env.example .env     # set PRIVATE_KEY, PORTALDOT_RPC_URL, PORTALDOT_CHAIN_ID
-npm run deploy:portaldot
+cp .env.example .env         # set PORTALDOT_RPC_URL and PRIVATE_KEY (funded with test POT)
+npm run deploy:portaldot     # deploys and configures all four contracts
+npm run interact:portaldot   # claims a demo bond, stakes it and claims yield onchain
 ```
 
-The deployer becomes the relayer unless `RELAYER_ADDRESS` is set, and `REMOTE_CHAIN_ID` sets the bridge route. For the frontend, set `NEXT_PUBLIC_HOME_CHAIN_ID`, `NEXT_PUBLIC_PORTALDOT_RPC_URL` and optionally `NEXT_PUBLIC_PORTALDOT_EXPLORER_URL`.
+Both scripts print every tx hash (as explorer links when `PORTALDOT_EXPLORER_URL` is set) and save them to `deployments/portaldot_testnet.json`. The chain ID is read from the RPC unless `PORTALDOT_CHAIN_ID` is set. The deployer becomes the relayer unless `RELAYER_ADDRESS` is set, and `REMOTE_CHAIN_ID` sets the bridge route.
+
+For the frontend, set `NEXT_PUBLIC_HOME_CHAIN_ID`, `NEXT_PUBLIC_PORTALDOT_CHAIN_ID`, `NEXT_PUBLIC_PORTALDOT_RPC_URL` and optionally `NEXT_PUBLIC_PORTALDOT_EXPLORER_URL`.
 
 ## Known limits
 

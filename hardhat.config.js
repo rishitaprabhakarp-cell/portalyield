@@ -26,10 +26,11 @@ module.exports = {
       url: "http://127.0.0.1:8546",
       chainId: 31338,
     },
+    // Leave PORTALDOT_CHAIN_ID unset to accept whatever chain ID the RPC reports.
     portaldot_testnet: {
-      url: process.env.PORTALDOT_RPC_URL || "https://rpc-testnet.portaldot.io",
+      url: process.env.PORTALDOT_RPC_URL || "http://127.0.0.1:9933",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: parseInt(process.env.PORTALDOT_CHAIN_ID || "9999"),
+      ...(process.env.PORTALDOT_CHAIN_ID && { chainId: parseInt(process.env.PORTALDOT_CHAIN_ID) }),
     },
   },
   paths: {
